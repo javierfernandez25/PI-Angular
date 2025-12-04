@@ -26,7 +26,7 @@ export class CrearEncuestaComponent implements OnInit {
   });
 
   isEditMode = false;       
-  encuestaId: string | null = null; // ID de la encuesta (si editamos)
+  encuestaId: string | null = null; 
 
   // Getter para acceder fácil al array de preguntas en el HTML
   get preguntasArray() {
@@ -43,7 +43,8 @@ export class CrearEncuestaComponent implements OnInit {
     }
   }
 
-  // Cargar datos del servidor al formulario (Modo Edición)
+  // Cargar datos del servidor al formulario 
+  
   cargarDatosParaEditar(id: string) {
     // 1. Pedimos la información de la encuesta (Título y Descripción)
     this.apiService.getEncuestaPorId(id).subscribe((data: any) => {

@@ -35,16 +35,13 @@ export class EncuestaDetalleComponent implements OnInit {
   cargarDatosCompletos(id: string) {
     this.cargando = true;
 
-    // 2. Pedimos los datos de la ENCUESTA (Título, descripción...)
     this.apiService.getEncuestaPorId(id).subscribe({
       next: (data) => {
         console.log(' Encuesta recibida:', data);
         this.encuesta = data;
         
-        // ⚡ FORZAR ACTUALIZACIÓN: Pinta el título YA
         this.cd.detectChanges();
 
-        // 3. Una vez tenemos la encuesta, pedimos sus PREGUNTAS
         this.cargarPreguntas(id);
       },
       error: (err) => {

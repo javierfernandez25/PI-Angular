@@ -14,13 +14,13 @@ import { filter } from 'rxjs/operators';
 export class HomeComponent implements OnInit {
   
   private apiService = inject(ApiService);
-  private cd = inject(ChangeDetectorRef); // Herramienta para forzar actualización
+  private cd = inject(ChangeDetectorRef); 
   private router = inject(Router);
 
   listaDatos: any[] = [];
 
   constructor() {
-    // Escuchamos si el usuario hace clic en "Inicio" estando ya en Inicio
+    
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
