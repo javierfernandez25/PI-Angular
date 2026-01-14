@@ -1,8 +1,6 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
-import { ApiService } from '../../services/api';
+import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-crear-encuesta',
@@ -11,110 +9,42 @@ import { ApiService } from '../../services/api';
   templateUrl: './crear-encuesta.html',
   styleUrl: './crear-encuesta.scss'
 })
-export class CrearEncuestaComponent implements OnInit {
+export class CrearEncuestaComponent {
+  encuestaForm: FormGroup;
 
-  private fb = inject(FormBuilder);
-  private apiService = inject(ApiService);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
-
-  // Definición del formulario
-  encuestaForm: FormGroup = this.fb.group({
+  constructor(private fb: FormBuilder) {
+  this.encuestaForm = this.fb.group({
     titulo: ['', [Validators.required, Validators.minLength(3)]],
-    descripcion: [''],
+    descripcion: [''], // <-- ESTO ELIMINA EL ERROR ROJO
+    tiempoLimite: [0],
     preguntas: this.fb.array([])
   });
+}
 
-  isEditMode = false;
-  encuestaId: string | null = null;
-
-  // Getter para acceder fácil al array de preguntas en el HTML
-  get preguntasArray() {
+  get preguntasArray(): FormArray {
     return this.encuestaForm.get('preguntas') as FormArray;
   }
 
-  ngOnInit() {
-    // Comprobamos si hay un ID en la URL
-    this.encuestaId = this.route.snapshot.paramMap.get('id');
-
-    if (this.encuestaId) {
-      this.isEditMode = true;
-
-      // Check for resolved data
-      const dataEncuesta = this.route.snapshot.data['encuesta'];
-      const dataPreguntas = this.route.snapshot.data['preguntas']; // preguntasResolver returns array
-
-      if (dataEncuesta) {
-        this.encuestaForm.patchValue({
-          titulo: dataEncuesta.titulo,
-          descripcion: dataEncuesta.descripcion
-        });
-      }
-
-      if (dataPreguntas) {
-        const preguntas = Array.isArray(dataPreguntas) ? dataPreguntas : [];
-        this.preguntasArray.clear();
-        preguntas.forEach((p: any) => { // Added type annotation
-          const preguntaGroup = this.fb.group({
-            texto_pregunta: [p.texto_pregunta, Validators.required]
-          });
-          this.preguntasArray.push(preguntaGroup);
-        });
-      }
-    }
-  }
-
-  // Cargar datos del servidor al formulario (Legacy / fallback, kept just in case but unused if resolver works)
-  cargarDatosParaEditar(id: string) {
-    // Logic replaced by resolver consumption in ngOnInit
-  }
-
-  // Añadir una pregunta vacía al formulario
-  addPregunta() {
-    const preguntaGroup = this.fb.group({
-      texto_pregunta: ['', Validators.required]
+  // Crea una pregunta con todos los campos de tu HTML
+  crearPregunta(): FormGroup {
+    return this.fb.group({
+      texto: ['', Validators.required],
+      obligatoria: [false],
+      limite: ['250']
     });
-    this.preguntasArray.push(preguntaGroup);
   }
 
-  // Eliminar una pregunta del formulario
-  removePregunta(index: number) {
+  addPregunta(): void {
+    this.preguntasArray.push(this.crearPregunta());
+  }
+
+  removePregunta(index: number): void {
     this.preguntasArray.removeAt(index);
   }
 
-  // Enviar datos al servidor
-  onSubmit() {
-    if (this.encuestaForm.invalid) {
-      this.encuestaForm.markAllAsTouched();
-      return;
+  onSubmit(): void {
+    if (this.encuestaForm.valid) {
+      console.log('Datos listos para enviar:', this.encuestaForm.value);
     }
-
-    const datos = this.encuestaForm.value;
-
-    if (this.isEditMode && this.encuestaId) {
-      this.apiService.actualizarEncuesta(this.encuestaId, datos).subscribe({
-        next: () => {
-          alert(' Encuesta actualizada correctamente');
-          this.irAlInicioConRetraso();
-        },
-        error: (err) => console.error(err)
-      });
-
-    } else {
-      this.apiService.crearEncuesta(datos).subscribe({
-        next: () => {
-          alert(' Encuesta creada correctamente');
-          this.irAlInicioConRetraso();
-        },
-        error: (err) => console.error(err)
-      });
-    }
-  }
-
-
-  irAlInicioConRetraso() {
-    setTimeout(() => {
-      this.router.navigate(['/']);
-    }, 100);
   }
 }

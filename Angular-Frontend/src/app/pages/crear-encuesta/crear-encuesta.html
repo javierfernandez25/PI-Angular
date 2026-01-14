@@ -1,45 +1,64 @@
-<div class="form-container">
-  <h2>📝 Nueva Encuesta</h2>
-
+<div class="container mt-5">
+  <h2 class="text-custom-primary mb-4">📝 Creador de Encuestas</h2>
+  
   <form [formGroup]="encuestaForm" (ngSubmit)="onSubmit()">
-    
-    <div class="form-section">
-      <label>Título de la Encuesta:</label>
-      <input type="text" formControlName="titulo" placeholder="Ej: Satisfacción del Cliente">
-      
-      <label>Descripción:</label>
-      <textarea formControlName="descripcion" rows="3" placeholder="Breve descripción..."></textarea>
+    <div class="card-container mb-4">
+      <div class="row">
+        <div class="col-md-4">
+          <label class="fw-bold">Título de la Encuesta</label>
+          <input type="text" class="form-control" formControlName="titulo" placeholder="Ej: Feedback Clase">
+        </div>
+        
+        <div class="col-md-5">
+          <label class="fw-bold">Descripción</label>
+          <input type="text" class="form-control" formControlName="descripcion" placeholder="Breve descripción opcional">
+        </div>
+
+        <div class="col-md-3">
+          <label class="fw-bold">Tiempo (min)</label>
+          <input type="number" class="form-control" formControlName="tiempoLimite">
+        </div>
+      </div>
     </div>
 
-    <div class="preguntas-section">
-      <div class="section-header">
-        <h3>Preguntas ({{ preguntasArray.controls.length }})</h3>
-        <button type="button" class="btn-add" (click)="addPregunta()">
-          + Añadir Pregunta
-        </button>
-      </div>
-
-      <div formArrayName="preguntas">
-        @for (pregunta of preguntasArray.controls; track $index) {
-          
-          <div [formGroupName]="$index" class="pregunta-card">
-            <div class="pregunta-header">
-              <span>Pregunta #{{ $index + 1 }}</span>
-              <button type="button" class="btn-delete" (click)="removePregunta($index)">🗑️ Borrar</button>
-            </div>
-            
-            <input type="text" formControlName="texto_pregunta" placeholder="Escribe tu pregunta aquí...">
+    <div formArrayName="preguntas">
+      @for (pregunta of preguntasArray.controls; track $index) {
+        <div [formGroupName]="$index" class="card-container shadow-sm mb-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5>Pregunta #{{ $index + 1 }}</h5>
+            <button type="button" class="btn btn-danger btn-sm" (click)="removePregunta($index)">Eliminar</button>
           </div>
-
-        } @empty {
-          <p class="no-preguntas">No hay preguntas. ¡Pulsa el botón de añadir!</p>
-        }
-      </div>
+          
+          <div class="mt-3">
+            <input type="text" class="form-control mb-2" formControlName="texto" placeholder="Escriba su pregunta...">
+            
+            <div class="row align-items-center">
+              <div class="col-md-4">
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" formControlName="obligatoria" [id]="'check' + $index">
+                  <label class="form-check-label" [for]="'check' + $index">Obligatoria (*)</label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <select class="form-select" formControlName="limite">
+                  <option value="250">Máximo 250 caracteres</option>
+                  <option value="500">Máximo 500 caracteres</option>
+                  <option value="0">Sin límite</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
     </div>
 
-    <button type="submit" class="btn-submit" [disabled]="encuestaForm.invalid">
-      💾 Guardar Encuesta
-    </button>
-
+    <div class="d-flex gap-2 mt-4">
+      <button type="button" class="btn bg-custom-primary text-white" (click)="addPregunta()">
+        + Añadir Pregunta
+      </button>
+      <button type="submit" class="btn btn-success" [disabled]="encuestaForm.invalid">
+        💾 Guardar Encuesta
+      </button>
+    </div>
   </form>
 </div>
