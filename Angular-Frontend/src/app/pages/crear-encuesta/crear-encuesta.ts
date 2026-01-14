@@ -12,7 +12,7 @@ import { ApiService } from '../../services/api';
   styleUrl: './crear-encuesta.scss'
 })
 export class CrearEncuestaComponent implements OnInit {
-  
+
   private fb = inject(FormBuilder);
   private apiService = inject(ApiService);
   private router = inject(Router);
@@ -22,11 +22,11 @@ export class CrearEncuestaComponent implements OnInit {
   encuestaForm: FormGroup = this.fb.group({
     titulo: ['', [Validators.required, Validators.minLength(3)]],
     descripcion: [''],
-    preguntas: this.fb.array([]) 
+    preguntas: this.fb.array([])
   });
 
-  isEditMode = false;       
-  encuestaId: string | null = null; 
+  isEditMode = false;
+  encuestaId: string | null = null;
 
   // Getter para acceder fácil al array de preguntas en el HTML
   get preguntasArray() {
@@ -34,40 +34,39 @@ export class CrearEncuestaComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Comprobamos si hay un ID en la URL (ej: /editar-encuesta/12345)
+    // Comprobamos si hay un ID en la URL
     this.encuestaId = this.route.snapshot.paramMap.get('id');
 
     if (this.encuestaId) {
       this.isEditMode = true;
-      this.cargarDatosParaEditar(this.encuestaId);
-    }
-  }
 
-  // Cargar datos del servidor al formulario 
-  
-  cargarDatosParaEditar(id: string) {
-    // 1. Pedimos la información de la encuesta (Título y Descripción)
-    this.apiService.getEncuestaPorId(id).subscribe((data: any) => {
-      this.encuestaForm.patchValue({
-        titulo: data.titulo,
-        descripcion: data.descripcion
-      });
+      // Check for resolved data
+      const dataEncuesta = this.route.snapshot.data['encuesta'];
+      const dataPreguntas = this.route.snapshot.data['preguntas']; // preguntasResolver returns array
 
-      // 2. Pedimos las preguntas asociadas a esa encuesta
-      this.apiService.getPreguntas(id).subscribe((preguntas: any[]) => {
-        
-        // Limpiamos el array por si tenía algo basura
+      if (dataEncuesta) {
+        this.encuestaForm.patchValue({
+          titulo: dataEncuesta.titulo,
+          descripcion: dataEncuesta.descripcion
+        });
+      }
+
+      if (dataPreguntas) {
+        const preguntas = Array.isArray(dataPreguntas) ? dataPreguntas : [];
         this.preguntasArray.clear();
-
-        // Rellenamos el formulario con las preguntas que vienen de la BD
-        preguntas.forEach(p => {
+        preguntas.forEach((p: any) => { // Added type annotation
           const preguntaGroup = this.fb.group({
             texto_pregunta: [p.texto_pregunta, Validators.required]
           });
           this.preguntasArray.push(preguntaGroup);
         });
-      });
-    });
+      }
+    }
+  }
+
+  // Cargar datos del servidor al formulario (Legacy / fallback, kept just in case but unused if resolver works)
+  cargarDatosParaEditar(id: string) {
+    // Logic replaced by resolver consumption in ngOnInit
   }
 
   // Añadir una pregunta vacía al formulario
@@ -112,10 +111,10 @@ export class CrearEncuestaComponent implements OnInit {
     }
   }
 
-  
+
   irAlInicioConRetraso() {
     setTimeout(() => {
       this.router.navigate(['/']);
-    }, 100); 
+    }, 100);
   }
 }
